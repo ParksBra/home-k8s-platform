@@ -38,7 +38,7 @@
             config:
               region: "{{ minio_velero_bucket_region }}"
               s3ForcePathStyle: "true"
-              s3Url: http://minio.tenant.svc.cluster.local:9000
+              s3Url: http://minio.tenant.svc.cluster.local:80
 
 - name: Create access secret for velero
   kubernetes.core.k8s:
