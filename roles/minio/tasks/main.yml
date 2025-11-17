@@ -91,6 +91,7 @@
           - ReadWriteOnce
         persistentVolumeReclaimPolicy: Retain
         storageClassName: minio-storageclass
+        claimRef: null
         hostPath:
           path: "{{ minio_local_storage_path }}"
           type: DirectoryOrCreate
