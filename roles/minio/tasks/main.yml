@@ -42,6 +42,8 @@
                 effect: "NoSchedule"
             nodeSelector:
               minio.io/storage-node: "true"
+        certificate:
+          requestAutoCert: false
             
     update_repo_cache: true
     state: present
