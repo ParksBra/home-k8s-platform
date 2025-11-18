@@ -10,6 +10,9 @@
 - name: Install velero chart via helm
   include_tasks: install_velero_chart.yml
 
+- name: Configure velero scheduled backups
+  include_tasks: configure_velero_scheduled_backups.yml
+
 - name: Install velero_cli tools
   include_role: cluster_storage/velero/velero_cli
   when: velero_cli_enabled

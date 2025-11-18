@@ -8,6 +8,13 @@ infiscal_url: "{{ lookup('env', 'INFISCAL_URL') }}"
 infiscal_project_id: "{{ lookup('env', 'INFISCAL_PROJECT_ID') }}"
 infiscal_environment_slug: "{{ lookup('env', 'INFISCAL_ENVIRONMENT_SLUG') }}"
 
+patching_enabled: true
+patching_cron: ['15', '2', '*', '*', '1'] # Set per-host
+patching_enable_velero_backup: true
+patching_velero_backup_name: "pre-patching-backup"
+patching_velero_backup_ttl: "144h0m0s" # 6 days
+patching_velero_backup_host: "{{ groups['k8s_controller'][0] }}" # Host to run velero backup from
+
 openebs_namespace: "openebs"
 openebs_zfs_pool_name: "zfspv-pool"
 openebs_zfs_pool_device: "/dev/sda1"
@@ -44,6 +51,14 @@ velero_namespace: "velero"
 velero_internal_kubectl_repository: "bitnamilegacy/kubectl"
 # velero_internal_kubectl_version_tag: "{{ k8s_version }}"
 velero_internal_kubectl_version_tag: "1.33.4" # Old kubectl version as newest container version isn't available through bitnamilegacy/kubectl
+velero_schedule_backup: true
+velero_schedule_backup_cron: ['0', '3', '*', '*', '*'] # Every day at 03:00 AM
+velero_schedule_backup_ttl: "336h0m0s" # 14 days
+velero_schedule_backup_name: "auto-backup"
+velero_schedule_backup_include_namespaces: ['*'] # Namespaces to include in scheduled backup
+velero_schedule_backup_exclude_namespaces: [] # Namespaces to exclude from scheduled backup
+velero_schedule_backup_include_resources: ['*'] # Resources to include in scheduled backup
+velero_schedule_backup_exclude_resources: [] # Resources to exclude from scheduled backup
 
 minio_operator_namespace: "minio-operator"
 

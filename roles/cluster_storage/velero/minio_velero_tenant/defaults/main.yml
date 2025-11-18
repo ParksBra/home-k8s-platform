@@ -2,6 +2,15 @@ velero_namespace: "velero"
 velero_internal_kubectl_repository: "bitnamilegacy/kubectl"
 velero_internal_kubectl_version_tag: "1.33.4"
 
+velero_schedule_backup: false
+velero_schedule_backup_cron: ['0', '3', '*', '*', '*'] # Every day at 03:00 AM
+velero_schedule_backup_ttl: "336h0m0s" # 14 days
+velero_schedule_backup_name: "auto-backup"
+velero_schedule_backup_include_namespaces: ['*'] # Namespaces to include in scheduled backup
+velero_schedule_backup_exclude_namespaces: [] # Namespaces to exclude from scheduled backup
+velero_schedule_backup_include_resources: ['*'] # Resources to include in scheduled backup
+velero_schedule_backup_exclude_resources: [] # Resources to exclude from scheduled backup
+
 velero_cli_enabled: true
 
 minio_velero_tenant_reference: "minio-velero"
