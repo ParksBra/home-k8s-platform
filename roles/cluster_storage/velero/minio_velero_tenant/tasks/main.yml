@@ -14,5 +14,6 @@
   include_tasks: configure_velero_scheduled_backups.yml
 
 - name: Install velero_cli tools
-  include_role: cluster_storage/velero/velero_cli
+  include_role:
+    name: cluster_storage/velero/velero_cli
   when: velero_cli_enabled
