@@ -1,3 +1,13 @@
+- name: Ensure local storage path exists for minio-velero tenant with correct permissions
+  ansible.builtin.file:
+    path: "{{ minio_velero_tenant_local_storage_path }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    recurse: true
+  become: true
+
 - name: Patch controller with storage node label for minio-velero PV
   kubernetes.core.k8s:
     state: present
