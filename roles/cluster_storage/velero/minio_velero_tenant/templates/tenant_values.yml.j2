@@ -20,15 +20,15 @@ tenant:
       nodeSelector:
         minio.io/storage-node: "true"
       securityContext:
-        runAsUser: "{{ minio_velero_user_info.uid | int }}"
-        runAsGroup: "{{ minio_velero_user_info.group | int }}"
-        fsGroup: "{{ minio_velero_user_info.group | int }}"
+        runAsUser: {{ minio_velero_user_info.uid | int }}
+        runAsGroup: {{ minio_velero_user_info.group | int }}
+        fsGroup: {{ minio_velero_user_info.group | int }}
         fsGroupChangePolicy: "OnRootMismatch"
-        runAsNonRoot: "{{ false if minio_velero_user_info.uid | int == 0 else true | bool }}"
+        runAsNonRoot: {{ false if minio_velero_user_info.uid | int == 0 else true | bool }}
       containerSecurityContext:
-        runAsUser: "{{ minio_velero_user_info.uid | int }}"
-        runAsGroup: "{{ minio_velero_user_info.group | int }}"
+        runAsUser: {{ minio_velero_user_info.uid | int }}
+        runAsGroup: {{ minio_velero_user_info.group | int }}
         allowPrivilegeEscalation: false
-        runAsNonRoot: "{{ false if minio_velero_user_info.uid | int == 0 else true | bool }}"
+        runAsNonRoot: {{ false if minio_velero_user_info.uid | int == 0 else true | bool }}
   certificate:
-    requestAutoCert: "{{ true if minio_velero_tenant_api_svc_protocol == 'https' else false | bool }}"
+    requestAutoCert: {{ true if minio_velero_tenant_api_svc_protocol == 'https' else false | bool }}
