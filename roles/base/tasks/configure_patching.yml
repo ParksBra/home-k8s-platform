@@ -15,7 +15,7 @@
     day: "{{ patching_cron[2] }}"
     month: "{{ patching_cron[3] }}"
     weekday: "{{ patching_cron[4] }}"
-    job: "/root/patching.sh"
+    job: "sudo /root/patching.sh"
     user: root
     state: "{{ 'present' if patching_enabled else 'absent' }}"
   become: true
