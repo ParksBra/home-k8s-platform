@@ -13,6 +13,11 @@
   register: minio_velero_user_info
   become: true
 
+- name: Set gid and uid facts
+  ansible.builtin.set_fact:
+    minio_velero_tenant_system_gid: "{{ minio_velero_user_info.group | int }}"
+    minio_velero_tenant_system_uid: "{{ minio_velero_user_info.uid | int }}"
+
 - name: Create temp values file
   block:
     - name: Ensure temp directory exists
