@@ -1,0 +1,21 @@
+velero_namespace: "velero"
+velero_internal_kubectl_repository: "bitnamilegacy/kubectl"
+velero_internal_kubectl_version_tag: "1.33.4"
+
+velero_cli_enabled: true
+
+minio_velero_tenant_reference: "minio-velero"
+minio_velero_tenant_access_key: "minio_velero_admin"
+minio_velero_tenant_secret_key: "changeme"
+minio_velero_tenant_bucket_name: "velero"
+minio_velero_tenant_bucket_region: "minio"
+minio_velero_tenant_storage_host: "{{ groups['k8s_controller'][0] }}"
+minio_velero_tenant_namespace: "{{ velero_namespace }}"
+minio_velero_tenant_local_storage_path: "/mnt/{{ minio_velero_tenant_reference }}-data"
+minio_velero_tenant_volume_size: "10Gi"
+minio_velero_tenant_pool_name: "pool0"
+minio_velero_tenant_api_svc_address: "minio.{{ minio_velero_tenant_namespace }}.svc.{{ k8s_service_dns_domain}}"
+minio_velero_tenant_api_svc_protocol: "http"
+minio_velero_tenant_api_svc_uri: "{{ minio_velero_tenant_api_svc_protocol }}://{{ minio_velero_tenant_api_svc_address }}"
+minio_velero_tenant_system_user: "minio-velero"
+minio_velero_tenant_system_group: "minio-velero"

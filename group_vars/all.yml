@@ -4,8 +4,6 @@ ansible_python_interpreter: "/usr/bin/python3.13"
 
 temp_directory: "/tmp/ansible_home"
 
-helm_values_temp_file: "{{ temp_directory }}/helm_values.yml"
-
 infiscal_url: "{{ lookup('env', 'INFISCAL_URL') }}"
 infiscal_project_id: "{{ lookup('env', 'INFISCAL_PROJECT_ID') }}"
 infiscal_environment_slug: "{{ lookup('env', 'INFISCAL_ENVIRONMENT_SLUG') }}"
@@ -32,7 +30,7 @@ k8s_kubeadm_opts: ""
 k8s_init_opts: ""
 k8s_discovery_token_secret_name: "k8s-discovery-token"
 k8s_discovery_token: "{{ lookup('infisical.vault.read_secrets', secret_name=k8s_discovery_token_secret_name, path='/', project_id=infiscal_project_id, env_slug=infiscal_environment_slug, url=infiscal_url).value }}"
-k8s_force_reset: "{{ lookup('env', 'K8S_FORCE_RESET') | default(false) | bool }}"
+k8s_force_cluster_reset: "{{ lookup('env', 'K8S_FORCE_CLUSTER_RESET') | default(false) | bool }}"
 k8s_kubelet_extra_args: "" # Additional args to pass to kubelet service
 k8s_kubelet_include_extra_args: false # Whether to include extra args file for kubelet
 
@@ -44,10 +42,12 @@ velero_cli_enabled: true
 
 velero_namespace: "velero"
 velero_internal_kubectl_repository: "bitnamilegacy/kubectl"
+# velero_internal_kubectl_version_tag: "{{ k8s_version }}"
 velero_internal_kubectl_version_tag: "1.33.4" # Old kubectl version as newest container version isn't available through bitnamilegacy/kubectl
 
 minio_operator_namespace: "minio-operator"
 
+minio_velero_tenant_namespace: "{{ velero_namespace }}"
 minio_velero_tenant_reference: "minio-velero"
 minio_velero_tenant_access_key: "minio_velero_admin"
 minio_velero_tenant_secret_key_secret_name: "minio-velero-secret-key"
@@ -55,11 +55,11 @@ minio_velero_tenant_secret_key: "{{ lookup('infisical.vault.read_secrets', secre
 minio_velero_tenant_bucket_name: "velero"
 minio_velero_tenant_bucket_region: "minio"
 minio_velero_tenant_storage_host: "{{ groups['k8s_controller'][0] }}"
-minio_velero_tenant_namespace: "{{ velero_namespace }}"
 minio_velero_tenant_local_storage_path: "/mnt/{{ minio_velero_tenant_reference }}-data"
 minio_velero_tenant_volume_size: "10Gi"
 minio_velero_tenant_pool_name: "pool0"
 minio_velero_tenant_api_svc_address: "minio.{{ minio_velero_tenant_namespace }}.svc.{{ k8s_service_dns_domain}}"
-minio_velero_tenant_api_svc_port: 80
 minio_velero_tenant_api_svc_protocol: "http"
-minio_velero_tenant_api_svc_uri: "{{ minio_velero_tenant_api_svc_protocol }}://{{ minio_velero_tenant_api_svc_address }}:{{ minio_velero_tenant_api_svc_port }}"
+minio_velero_tenant_api_svc_uri: "{{ minio_velero_tenant_api_svc_protocol }}://{{ minio_velero_tenant_api_svc_address }}"
+minio_velero_tenant_system_user: "minio-velero"
+minio_velero_tenant_system_group: "minio-velero"

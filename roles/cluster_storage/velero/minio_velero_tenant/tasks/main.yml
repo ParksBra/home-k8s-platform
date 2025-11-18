@@ -1,0 +1,15 @@
+- name: Install minio-velero tenant chart via helm
+  include_tasks: install_minio_velero_tenant_chart.yml
+
+- name: Create minio-velero tenant persistent storage
+  include_tasks: create_minio_velero_storage.yml
+
+- name: Add minio tenant api service address to hosts file
+  include_tasks: add_minio_velero_svc_to_hosts.yml
+
+- name: Install velero chart via helm
+  include_tasks: install_velero_chart.yml
+
+- name: Install velero_cli tools
+  include_role: cluster_storage/velero/velero_cli
+  when: velero_cli_enabled
