@@ -4,6 +4,8 @@ ansible_python_interpreter: "/usr/bin/python3.13"
 
 temp_directory: "/tmp/ansible_home"
 
+host_dns_nameservers: ["1.1.1.1", "1.0.0.1"]
+
 infiscal_url: "{{ lookup('env', 'INFISCAL_URL') }}"
 infiscal_project_id: "{{ lookup('env', 'INFISCAL_PROJECT_ID') }}"
 infiscal_environment_slug: "{{ lookup('env', 'INFISCAL_ENVIRONMENT_SLUG') }}"

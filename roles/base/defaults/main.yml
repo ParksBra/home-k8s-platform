@@ -1,3 +1,7 @@
+temp_directory: "/tmp/ansible_home"
+
+host_dns_nameservers: ["75.75.75.75", "75.75.76.76"]
+
 patching_enabled: false
 patching_cron: ['15', '2', '*', '*', '1'] # 2:15 AM every Monday
 patching_enable_velero_backup: false
