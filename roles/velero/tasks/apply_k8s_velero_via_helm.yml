@@ -9,15 +9,15 @@
   kubernetes.core.helm:
     name: velero
     chart_ref: vmware-tanzu/velero
-    namespace: velero
+    namespace: "{{ velero_namespace }}"
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     release_values:
       dnsPolicy: ClusterFirst
       kubectl:
         image:
-          repository: bitnamilegacy/kubectl
-          tag: "1.33.4" # Old kubectl version for temp fix
+          repository: "{{ velero_internal_kubectl_repository }}"
+          tag: "{{ velero_internal_kubectl_version_tag }}"
       credentials:
         useSecret: true
         existingSecret: cloud-credentials
@@ -34,11 +34,11 @@
           - name: default
             provider: aws
             default: true
-            bucket: "{{ minio_velero_bucket_name }}"
+            bucket: "{{ minio_velero_tenant_bucket_name }}"
             config:
-              region: "{{ minio_velero_bucket_region }}"
+              region: "{{ minio_velero_tenant_bucket_region }}"
               s3ForcePathStyle: "true"
-              s3Url: http://minio.tenant.svc.cluster.local:80
+              s3Url: "{{ minio_velero_tenant_api_svc_uri }}"
 
 - name: Create access secret for velero
   kubernetes.core.k8s:
@@ -48,12 +48,12 @@
       kind: Secret
       metadata:
         name: cloud-credentials
-        namespace: velero
+        namespace: "{{ velero_namespace }}"
       type: Opaque
       stringData:
         cloud: |
           [default]
-          aws_access_key_id={{ minio_access_key }}
-          aws_secret_access_key={{ minio_secret_key }}
+          aws_access_key_id={{ minio_velero_tenant_access_key }}
+          aws_secret_access_key={{ minio_velero_tenant_secret_key }}
     kubeconfig: "{{ k8s_kubectl_config_path }}"
   no_log: "{{ not debug }}"

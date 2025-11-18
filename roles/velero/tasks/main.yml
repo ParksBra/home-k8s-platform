@@ -1,5 +1,6 @@
-- name: Install velero via helm
-  include_tasks: install_velero.yml
+- name: Install velero cli tools
+  include_tasks: install_velero_cli.yml
+  when: velero_cli_enabled
 
-- name: Apply velero via helm
-  include_tasks: apply_velero_via_helm.yml
+- name: Apply k8s velero via helm
+  include_tasks: apply_k8s_velero_via_helm.yml

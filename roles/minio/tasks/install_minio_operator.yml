@@ -1,0 +1,7 @@
+- name: Install minio operator via helm
+  kubernetes.core.helm:
+    name: minio-operator
+    chart_ref: minio/operator
+    namespace: "{{ minio_operator_namespace }}"
+    create_namespace: true
+    kubeconfig: "{{ k8s_kubectl_config_path }}"

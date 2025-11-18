@@ -1,0 +1,50 @@
+- name: Install minio-velero tenant via helm
+  kubernetes.core.helm:
+    name: "{{ minio_velero_tenant_reference }}-tenant"
+    chart_ref: minio/tenant
+    namespace: "{{ minio_velero_tenant_namespace }}"
+    create_namespace: true
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+    release_values:
+      tenant:
+        name: "{{ minio_velero_tenant_reference }}"
+        configSecret:
+          name: "{{ minio_velero_tenant_reference }}-tenant-secret"
+          existingSecret: "true"
+        buckets:
+          - name: "{{ minio_velero_tenant_bucket_name }}"
+            objectLock: false
+            region: "{{ minio_velero_tenant_bucket_region }}"
+        pools:
+          - name: "{{ minio_velero_tenant_pool_name }}"
+            servers: 1
+            volumesPerServer: 1
+            storageClassName: "{{ minio_velero_tenant_reference }}-sc"
+            size: "{{ minio_velero_tenant_volume_size }}"
+            tolerations:
+              - key: "node-role.kubernetes.io/control-plane"
+                operator: "Exists"
+                effect: "NoSchedule"
+            nodeSelector:
+              minio.io/storage-node: "true"
+        certificate:
+          requestAutoCert: false
+    update_repo_cache: true
+    state: present
+
+- name: Create minio-velero tenant secret
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ minio_velero_tenant_reference }}-tenant-secret"
+        namespace: "{{ minio_velero_tenant_namespace }}"
+      type: Opaque
+      stringData:
+        config.env: |-
+          export MINIO_ROOT_USER={{ minio_velero_tenant_access_key | quote }}
+          export MINIO_ROOT_PASSWORD={{ minio_velero_tenant_secret_key | quote }}
+  no_log: "{{ not debug }}"

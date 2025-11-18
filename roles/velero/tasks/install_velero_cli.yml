@@ -1,0 +1,14 @@
+- name: Unarchive velero install
+  ansible.builtin.unarchive:
+    src: "{{ velero_cli_download_url }}"
+    dest: "{{ velero_cli_install_dir }}"
+    remote_src: true
+    mode: '0755'
+    creates: "{{ velero_cli_install_dir }}/velero-v{{ velero_cli_version }}-linux-{{ velero_cli_arch }}/velero"
+
+- name: Create symlink for velero binary
+  ansible.builtin.file:
+    src: "{{ velero_cli_install_dir }}/velero-v{{ velero_cli_version }}-linux-{{ velero_cli_arch }}/velero"
+    dest: "{{ velero_cli_install_dir }}/velero"
+    state: link
+    force: true
