@@ -8,7 +8,7 @@
 
 - name: Configure patching cron job
   ansible.builtin.cron:
-    name: "weekly_patching"
+    name: "auto_patching"
     minute: "{{ patching_cron[0] }}"
     hour: "{{ patching_cron[1] }}"
     day: "{{ patching_cron[2] }}"
