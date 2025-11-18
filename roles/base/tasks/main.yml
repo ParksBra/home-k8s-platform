@@ -1,3 +1,6 @@
+- name: Configure host dns
+  ansible.builtin.include_tasks: configure_dns.yml
+
 - name: Update apt
   ansible.builtin.apt:
     update_cache: true

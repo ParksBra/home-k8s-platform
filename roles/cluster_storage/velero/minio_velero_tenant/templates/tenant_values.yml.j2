@@ -1,0 +1,34 @@
+tenant:
+  name: "{{ minio_velero_tenant_reference }}"
+  configSecret:
+    name: "{{ minio_velero_tenant_reference }}-tenant-secret"
+    existingSecret: "true"
+  buckets:
+    - name: "{{ minio_velero_tenant_bucket_name }}"
+      objectLock: false
+      region: "{{ minio_velero_tenant_bucket_region }}"
+  pools:
+    - name: "{{ minio_velero_tenant_pool_name }}"
+      servers: 1
+      volumesPerServer: 1
+      storageClassName: "{{ minio_velero_tenant_reference }}-sc"
+      size: "{{ minio_velero_tenant_volume_size }}"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      nodeSelector:
+        minio.io/storage-node: "true"
+      securityContext:
+        runAsUser: {{ minio_velero_tenant_system_uid }}
+        runAsGroup: {{ minio_velero_tenant_system_gid }}
+        fsGroup: {{ minio_velero_tenant_system_gid }}
+        fsGroupChangePolicy: "OnRootMismatch"
+        runAsNonRoot: {{ false if minio_velero_tenant_system_uid == 0 else true | bool }}
+      containerSecurityContext:
+        runAsUser: {{ minio_velero_tenant_system_uid }}
+        runAsGroup: {{ minio_velero_tenant_system_gid }}
+        allowPrivilegeEscalation: false
+        runAsNonRoot: {{ false if minio_velero_tenant_system_uid == 0 else true | bool }}
+  certificate:
+    requestAutoCert: {{ true if minio_velero_tenant_api_svc_protocol == 'https' else false | bool }}

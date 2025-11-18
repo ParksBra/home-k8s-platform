@@ -8,5 +8,6 @@
 - hosts: k8s_controller
   roles:
     - {role: cluster_storage/openebs, tags: ['openebs']}
+    - {role: cluster_storage/velero/minio_velero_tenant, tags: ['minio_velero_tenant', 'minio', 'velero']}
   become: true
   become_user: root

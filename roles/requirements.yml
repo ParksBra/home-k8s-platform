@@ -1,4 +1,3 @@
----
 collections:
   - name: infisical.vault
   - name: kubernetes.core

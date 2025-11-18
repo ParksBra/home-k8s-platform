@@ -1,0 +1,13 @@
+temp_directory: "/tmp/ansible_home"
+
+host_dns_nameservers: ["75.75.75.75", "75.75.76.76"]
+
+patching_enabled: false
+patching_cron: ['15', '2', '*', '*', '1'] # 2:15 AM every Monday
+patching_enable_velero_backup: false
+patching_velero_backup_name: "pre-patching-backup"
+patching_velero_backup_ttl: "144h0m0s" # 6 days
+patching_velero_backup_host: ""
+
+velero_cli_install_dir: "/usr/local/bin"
+velero_namespace: "velero"

@@ -1,0 +1,11 @@
+
+{% if patching_enabled %}
+{% if patching_enable_velero_backup and velero_cli_enabled and (patching_velero_backup_host == inventory_hostname) %}
+{{ velero_cli_install_dir }}/velero backup create {{ patching_velero_backup_name }} --ttl {{ patching_velero_backup_ttl }} --wait --namespace {{ velero_namespace }}
+sleep 10
+{% endif %}
+apt update -y
+apt full-upgrade -y
+sleep 10
+shutdown -r now
+{% endif %}

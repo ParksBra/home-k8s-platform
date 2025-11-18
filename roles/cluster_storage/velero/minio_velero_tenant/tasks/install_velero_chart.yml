@@ -1,0 +1,59 @@
+- name: Add vmware-tanzu (velero) repo to helm
+  kubernetes.core.helm_repository:
+    name: vmware-tanzu
+    repo_url: https://vmware-tanzu.github.io/helm-charts
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+    force_update: true
+
+- name: Install velero via helm
+  kubernetes.core.helm:
+    name: velero
+    chart_ref: vmware-tanzu/velero
+    namespace: "{{ velero_namespace }}"
+    create_namespace: true
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+    release_values:
+      dnsPolicy: ClusterFirst
+      kubectl:
+        image:
+          repository: "{{ velero_internal_kubectl_repository }}"
+          tag: "{{ velero_internal_kubectl_version_tag }}"
+      credentials:
+        useSecret: true
+        existingSecret: cloud-credentials
+      initContainers:
+        - name: velero-plugin-for-aws
+          image: velero/velero-plugin-for-aws:v1.7.0
+          volumeMounts:
+            - mountPath: /target
+              name: plugins
+      backupsEnabled: true
+      snapshotsEnabled: false
+      configuration:
+        backupStorageLocation:
+          - name: default
+            provider: aws
+            default: true
+            bucket: "{{ minio_velero_tenant_bucket_name }}"
+            config:
+              region: "{{ minio_velero_tenant_bucket_region }}"
+              s3ForcePathStyle: "true"
+              s3Url: "{{ minio_velero_tenant_api_svc_uri }}"
+
+- name: Create access secret for velero
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: cloud-credentials
+        namespace: "{{ velero_namespace }}"
+      type: Opaque
+      stringData:
+        cloud: |
+          [default]
+          aws_access_key_id={{ minio_velero_tenant_access_key }}
+          aws_secret_access_key={{ minio_velero_tenant_secret_key }}
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+  no_log: "{{ not debug }}"
