@@ -10,6 +10,7 @@ infiscal_url: "{{ lookup('env', 'INFISCAL_URL') }}"
 infiscal_project_id: "{{ lookup('env', 'INFISCAL_PROJECT_ID') }}"
 infiscal_environment_slug: "{{ lookup('env', 'INFISCAL_ENVIRONMENT_SLUG') }}"
 
+openebs_namespace: "openebs"
 openebs_zfs_pool_name: "zfspv-pool"
 openebs_zfs_pool_device: "/dev/sda1"
 
@@ -40,6 +41,7 @@ velero_cli_arch: "arm64"
 velero_cli_download_url: "https://github.com/vmware-tanzu/velero/releases/download/v{{ velero_cli_version }}/velero-v{{ velero_cli_version }}-linux-{{ velero_cli_arch }}.tar.gz"
 velero_cli_install_dir: "/usr/local/bin"
 velero_cli_enabled: true
+
 velero_namespace: "velero"
 velero_internal_kubectl_repository: "bitnamilegacy/kubectl"
 velero_internal_kubectl_version_tag: "1.33.4" # Old kubectl version as newest container version isn't available through bitnamilegacy/kubectl
