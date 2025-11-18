@@ -11,12 +11,13 @@
                   --apiserver-advertise-address {{ k8s_apiserver_ip }} \
                   --apiserver-bind-port {{ k8s_apiserver_port }} \
                   --cri-socket=unix://{{ k8s_container_runtime_socket }} \
+                  --service-dns-domain {{ k8s_service_dns_domain }} \
                   {{ k8s_kubeadm_opts }} \
                   {{ k8s_init_opts }}
   register: init_k8s_cluster
   changed_when: "'Your Kubernetes control-plane has initialized successfully' in init_k8s_cluster.stdout"
   environment:
-    no_proxy: "$no_proxy,.svc,.svc.cluster.local"
+    no_proxy: "$no_proxy,.svc,.svc.{{ k8s_service_dns_domain }}"
   no_log: "{{ not debug }}"
   any_errors_fatal: true
 
