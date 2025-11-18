@@ -121,3 +121,19 @@
           export MINIO_ROOT_USER={{ minio_access_key | quote }}
           export MINIO_ROOT_PASSWORD={{ minio_secret_key | quote }}
   no_log: "{{ not debug }}"
+
+- name: Get minio service cluster ip
+  kubernetes.core.k8s_info:
+    kind: Service
+    namespace: tenant
+    name: minio
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+  register: minio_service_info
+
+- name: Add minio service ip to hosts file
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    search_string: 'minio.tenant.svc.cluster.local'
+    line: "{{ minio_service_info.resources[0].spec.clusterIP }} minio.tenant.svc.cluster.local"
+    state: present
+  become: true
