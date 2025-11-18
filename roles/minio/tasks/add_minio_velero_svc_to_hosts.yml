@@ -6,7 +6,7 @@
     kubeconfig: "{{ k8s_kubectl_config_path }}"
   register: minio_service_info
   retries: 10
-  delay: 5
+  delay: 6
   until: minio_service_info.resources | length > 0
 
 - name: Add minio service IP to hosts file
