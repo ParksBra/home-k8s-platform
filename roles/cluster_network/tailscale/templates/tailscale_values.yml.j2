@@ -1,3 +1,19 @@
 oauth:
   clientId: "" # Leave empty to use created secret and avoid helm storing secrets
   clientSecret: ""
+
+operatorConfig:
+  defaultTags:
+    - "tag:k8s-operator"
+  image:
+    repository: "tailscale/k8s-operator"
+    tag: "latest"
+    pullPolicy: "Always"
+
+proxyConfig:
+  defaultTags:
+    - "tag:k8s"
+  image:
+    repository: "tailscale/tailscale"
+    tag: "latest"
+    pullPolicy: "Always"
