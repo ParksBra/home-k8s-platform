@@ -26,5 +26,4 @@
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:
       - "{{ temp_directory }}/tailscale_values.yml"
-    update_repo_cache: true
     state: present
