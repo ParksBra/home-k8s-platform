@@ -1,0 +1,31 @@
+- name: Add tailscale repo to helm
+  kubernetes.core.helm_repository:
+    name: tailscale
+    repo_url: https://pkgs.tailscale.com/helmcharts
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+    force_update: true
+
+- name: Create temp values file for tailscale
+  block:
+    - name: Ensure temp directory exists
+      ansible.builtin.file:
+        path: "{{ temp_directory }}"
+        state: directory
+        mode: '0755'
+    - name: Create helm values temp file for tailscale
+      ansible.builtin.template:
+        src: tailscale_values.yml.j2
+        dest: "{{ temp_directory }}/tailscale_values.yml"
+
+- name: Install tailscale operator via helm
+  kubernetes.core.helm:
+    name: tailscale-operator
+    chart_ref: tailscale/tailscale-operator
+    chart_version: "{{ k8s_cni_version }}"
+    namespace: "{{ tailscale_namespace }}"
+    create_namespace: true
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
+    values_files:
+      - "{{ temp_directory }}/tailscale_values.yml"
+    update_repo_cache: true
+    state: present
