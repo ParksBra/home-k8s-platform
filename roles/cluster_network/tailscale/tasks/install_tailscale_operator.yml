@@ -21,7 +21,6 @@
   kubernetes.core.helm:
     name: tailscale-operator
     chart_ref: tailscale/tailscale-operator
-    chart_version: "{{ k8s_cni_version }}"
     namespace: "{{ tailscale_namespace }}"
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
