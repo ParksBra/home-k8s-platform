@@ -3,14 +3,14 @@ oauth:
   clientSecret: ""
 
 operatorConfig:
-  defaultTags: {{ tailscale_operator_default_tags | join(",") }}
+  defaultTags: "{{ tailscale_operator_default_tags | join(",") }}"
   image:
     repository: "tailscale/k8s-operator"
     tag: "latest"
     pullPolicy: "Always"
 
 proxyConfig:
-  defaultTags: {{ tailscale_proxy_default_tags | join(",") }}
+  defaultTags: "{{ tailscale_proxy_default_tags | join(",") }}"
   image:
     repository: "tailscale/tailscale"
     tag: "latest"
