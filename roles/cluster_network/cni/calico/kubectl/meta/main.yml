@@ -1,2 +1,2 @@
 dependencies:
-  - role: cni/calicoctl
+  - role: cluster_network/cni/calicoctl
