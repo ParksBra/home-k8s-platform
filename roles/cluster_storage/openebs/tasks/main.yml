@@ -5,17 +5,12 @@
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     force_update: true
 
-- name: Create temp values file
-  block:
-    - name: Ensure temp directory exists
-      ansible.builtin.file:
-        path: "{{ temp_directory }}"
-        state: directory
-    
-    - name: Create helm values temp file for minio-velero tenant
-      ansible.builtin.template:
-        src: openebs_values.yml.j2
-        dest: "{{ temp_directory }}/openebs_values.yml"
+- name: Create values file
+  ansible.builtin.include_role:
+    name: helm_values
+  vars:
+    requested_values_templates:
+      - openebs
 
 - name: Install openebs via helm
   kubernetes.core.helm:
@@ -25,6 +20,6 @@
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:
-      - "{{ temp_directory }}/openebs_values.yml"
+      - "{{ helm_values_temp_file }}"
     update_repo_cache: true
     state: present

@@ -5,18 +5,12 @@
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     force_update: true
 
-- name: Create temp values file
-  block:
-    - name: Ensure temp directory exists
-      ansible.builtin.file:
-        path: "{{ temp_directory }}"
-        state: directory
-    
-    - name: Create helm values temp file for minio-velero tenant
-      ansible.builtin.template:
-        src: minio_operator_values.yml.j2
-        dest: "{{ temp_directory }}/minio_operator_values.yml"
-
+- name: Create values file
+  ansible.builtin.include_role:
+    name: helm_values
+  vars:
+    requested_values_templates:
+      - minio-operator
 
 - name: Install minio operator via helm
   kubernetes.core.helm:
@@ -26,4 +20,4 @@
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:
-      - "{{ temp_directory }}/minio_operator_values.yml"
+      - "{{ helm_values_temp_file }}"

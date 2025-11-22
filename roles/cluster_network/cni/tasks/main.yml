@@ -1,2 +1,3 @@
 - name: Install CNI via specified method
-  ansible.builtin.include_tasks: "{{ k8s_cni }}/{{ k8s_cni_installation_method }}/tasks/main.yml"
+  ansible.builtin.import_role:
+    name: "cluster_network/cni/{{ k8s_cni }}/{{ k8s_cni_installation_method }}"

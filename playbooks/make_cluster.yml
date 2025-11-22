@@ -12,8 +12,6 @@
   roles:
     - {role: k8s/controller, tags: ['k8s_controller']}
     - {role: helm, tags: ['helm']}
-    - {role: cluster_network/cni, tags: ['cni']}
-    - {role: cluster_network/tailscale, tags: ['tailscale']}
   become: true
   become_user: root
 

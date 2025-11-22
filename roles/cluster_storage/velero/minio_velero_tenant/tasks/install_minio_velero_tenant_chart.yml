@@ -18,17 +18,12 @@
     minio_velero_tenant_system_gid: "{{ minio_velero_user_info.group | int }}"
     minio_velero_tenant_system_uid: "{{ minio_velero_user_info.uid | int }}"
 
-- name: Create temp values file
-  block:
-    - name: Ensure temp directory exists
-      ansible.builtin.file:
-        path: "{{ temp_directory }}"
-        state: directory
-    
-    - name: Create helm values temp file for minio-velero tenant
-      ansible.builtin.template:
-        src: tenant_values.yml.j2
-        dest: "{{ temp_directory }}/{{ minio_velero_tenant_reference }}_tenant_values.yml"
+- name: Create values file
+  ansible.builtin.include_role:
+    name: helm_values
+  vars:
+    requested_values_templates:
+      - minio-velero-tenant
 
 - name: Install minio-velero tenant via helm
   kubernetes.core.helm:
@@ -38,7 +33,7 @@
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:
-      - "{{ temp_directory }}/{{ minio_velero_tenant_reference }}_tenant_values.yml"
+      - "{{ helm_values_temp_file }}"
     update_repo_cache: true
     state: present
 

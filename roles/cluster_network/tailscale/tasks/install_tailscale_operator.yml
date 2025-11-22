@@ -5,17 +5,12 @@
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     force_update: true
 
-- name: Create temp values file for tailscale
-  block:
-    - name: Ensure temp directory exists
-      ansible.builtin.file:
-        path: "{{ temp_directory }}"
-        state: directory
-        mode: '0755'
-    - name: Create helm values temp file for tailscale
-      ansible.builtin.template:
-        src: tailscale_values.yml.j2
-        dest: "{{ temp_directory }}/tailscale_values.yml"
+- name: Create values file
+  ansible.builtin.include_role:
+    name: helm_values
+  vars:
+    requested_values_templates:
+      - tailscale
 
 - name: Install tailscale operator via helm
   kubernetes.core.helm:
@@ -25,5 +20,5 @@
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:
-      - "{{ temp_directory }}/tailscale_values.yml"
+      - "{{ helm_values_temp_file }}"
     state: present

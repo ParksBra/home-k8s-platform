@@ -1,7 +1,7 @@
-- name: Add projectcalico repo to helm
+- name: Add ingress-nginx repo to helm
   kubernetes.core.helm_repository:
-    name: projectcalico
-    repo_url: https://docs.tigera.io/calico/charts
+    name: ingress-nginx
+    repo_url: https://kubernetes.github.io/ingress-nginx
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     force_update: true
 
@@ -10,17 +10,16 @@
     name: helm_values
   vars:
     requested_values_templates:
-      - tigera-operator
+      - ingress-nginx
 
-- name: Install calico via helm
+- name: Install ingress-nginx via helm
   kubernetes.core.helm:
-    name: projectcalico
-    chart_ref: projectcalico/tigera-operator
-    chart_version: "{{ k8s_cni_version }}"
-    namespace: tigera-operator
+    name: ingress-nginx
+    chart_ref: ingress-nginx/ingress-nginx
+    namespace: ingress-nginx
     create_namespace: true
+    kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:
       - "{{ helm_values_temp_file }}"
-    kubeconfig: "{{ k8s_kubectl_config_path }}"
     update_repo_cache: true
     state: present
