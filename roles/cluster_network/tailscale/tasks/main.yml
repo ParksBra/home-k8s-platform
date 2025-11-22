@@ -1,0 +1,5 @@
+- name: Install tailscale operator
+  ansible.builtin.include_tasks: install_tailscale_operator.yml
+
+- name: Create tailscale oauth secret
+  ansible.builtin.include_tasks: create_oauth_secret.yml

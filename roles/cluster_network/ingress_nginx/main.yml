@@ -1,7 +1,7 @@
-- name: Add openebs repo to helm
+- name: Add ingress-nginx repo to helm
   kubernetes.core.helm_repository:
-    name: openebs
-    repo_url: https://openebs.github.io/openebs
+    name: ingress-nginx
+    repo_url: https://kubernetes.github.io/ingress-nginx
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     force_update: true
 
@@ -10,13 +10,13 @@
     name: helm_values
   vars:
     requested_values_templates:
-      - openebs
+      - ingress-nginx
 
-- name: Install openebs via helm
+- name: Install ingress-nginx via helm
   kubernetes.core.helm:
-    name: openebs
-    chart_ref: openebs/openebs
-    namespace: "{{ openebs_namespace }}"
+    name: ingress-nginx
+    chart_ref: ingress-nginx/ingress-nginx
+    namespace: ingress-nginx
     create_namespace: true
     kubeconfig: "{{ k8s_kubectl_config_path }}"
     values_files:

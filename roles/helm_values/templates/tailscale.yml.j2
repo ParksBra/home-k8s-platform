@@ -1,0 +1,17 @@
+oauth:
+  clientId: "" # Leave empty to use created secret and avoid helm storing secrets
+  clientSecret: ""
+
+operatorConfig:
+  defaultTags: "{{ tailscale_operator_default_tags | join(',') }}"
+  image:
+    repository: "tailscale/k8s-operator"
+    tag: "latest"
+    pullPolicy: "Always"
+
+proxyConfig:
+  defaultTags: "{{ tailscale_proxy_default_tags | join(',') }}"
+  image:
+    repository: "tailscale/tailscale"
+    tag: "latest"
+    pullPolicy: "Always"

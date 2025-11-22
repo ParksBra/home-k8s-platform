@@ -100,7 +100,6 @@ pipeline {
             }
             steps {
                 echo 'Validating Ansible playbook syntax...'
-                
                     script {
                         try {
                             sh "${WORKSPACE}/.venv/bin/ansible-lint ${WORKSPACE}/playbooks/*.yml"
@@ -118,7 +117,7 @@ pipeline {
                 }
             }
         }
-        stage('make-k8s-cluster') {
+        stage('make-cluster') {
             steps {
                 withCredentials(
                     [sshUserPrivateKey(credentialsId: params.CONTROLLER_SSH_KEY, usernameVariable: 'controller_ssh_user', keyFileVariable: 'controller_ssh_key_path'),
@@ -130,6 +129,22 @@ pipeline {
                     setup_env_vars(controller_ssh_user, controller_ssh_key_path, worker_ssh_user, worker_ssh_key_path, infisical_identity_client_id, infisical_identity_secret, infisical_project_id)
                     script {
                         sh "${WORKSPACE}/.venv/bin/ansible-playbook '${WORKSPACE}/playbooks/make_cluster.yml' ${ansible_opts}"
+                    }
+                }
+            }
+        }
+        stage('make-cluster-network') {
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(credentialsId: params.CONTROLLER_SSH_KEY, usernameVariable: 'controller_ssh_user', keyFileVariable: 'controller_ssh_key_path'),
+                    sshUserPrivateKey(credentialsId: params.WORKER_SSH_KEY, usernameVariable: 'worker_ssh_user', keyFileVariable: 'worker_ssh_key_path'),
+                    usernamePassword(credentialsId: params.INFISICAL_IDENTITY, usernameVariable: 'infisical_identity_client_id', passwordVariable: 'infisical_identity_secret'),
+                    string(credentialsId: params.INFISCAL_PROJECT_ID, variable: 'infisical_project_id')
+                    ]) {
+                    echo 'Running setup_addons Ansible playbook on workers...'
+                    setup_env_vars(controller_ssh_user, controller_ssh_key_path, worker_ssh_user, worker_ssh_key_path, infisical_identity_client_id, infisical_identity_secret, infisical_project_id)
+                    script {
+                        sh "${WORKSPACE}/.venv/bin/ansible-playbook '${WORKSPACE}/playbooks/make_cluster_network.yml' ${ansible_opts}"
                     }
                 }
             }
@@ -151,7 +166,7 @@ pipeline {
             }
         }
     }
-    // Post work actions
+
     post {
         success {
             echo "${params.STACK_NAME} ${BUILD_TAG} Completed Successfully"

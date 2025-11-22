@@ -4,6 +4,8 @@ ansible_python_interpreter: "/usr/bin/python3.13"
 
 temp_directory: "/tmp/ansible_home"
 
+helm_values_temp_file: "{{ temp_directory }}/helm_values.yml"
+
 host_dns_nameservers: ["1.1.1.1", "1.0.0.1"]
 
 infiscal_url: "{{ lookup('env', 'INFISCAL_URL') }}"
@@ -16,6 +18,14 @@ patching_enable_velero_backup: true
 patching_velero_backup_name: "pre-patching-backup"
 patching_velero_backup_ttl: "144h0m0s" # 6 days
 patching_velero_backup_host: "{{ groups['k8s_controller'][0] }}" # Host to run velero backup from
+
+tailscale_namespace: "tailscale"
+tailscale_client_id_secret_name: "tailscale-client-id"
+tailscale_client_id: "{{ lookup('infisical.vault.read_secrets', secret_name=tailscale_client_id_secret_name, path='/', project_id=infiscal_project_id, env_slug=infiscal_environment_slug, url=infiscal_url).value }}"
+tailscale_client_secret_secret_name: "tailscale-client-secret"
+tailscale_client_secret: "{{ lookup('infisical.vault.read_secrets', secret_name=tailscale_client_secret_secret_name, path='/', project_id=infiscal_project_id, env_slug=infiscal_environment_slug, url=infiscal_url).value }}"
+tailscale_operator_default_tags: ["tag:k8s-operator"]
+tailscale_proxy_default_tags: ["tag:k8s"]
 
 openebs_namespace: "openebs"
 openebs_zfs_pool_name: "zfspv-pool"
