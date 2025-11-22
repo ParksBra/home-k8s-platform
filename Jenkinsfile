@@ -166,7 +166,7 @@ pipeline {
             }
         }
     }
-    // Post work actions
+
     post {
         success {
             echo "${params.STACK_NAME} ${BUILD_TAG} Completed Successfully"
