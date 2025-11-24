@@ -1,0 +1,5 @@
+- name: Add in apt repo source for terraform
+  ansible.builtin.include_tasks: install_hashicorp_repo.yml
+
+- name: Install Terraform
+  ansible.builtin.include_tasks: install_terraform.yml
