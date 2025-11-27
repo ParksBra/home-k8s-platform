@@ -1,6 +1,7 @@
 - hosts: k8s_controller
   roles:
     - {role: cluster_network/cni, tags: ['cni']}
+    - {role: cluster_network/ingress_nginx, tags: ['ingress_nginx']}
     - {role: cluster_network/tailscale, tags: ['tailscale']}
   become: true
   become_user: root
