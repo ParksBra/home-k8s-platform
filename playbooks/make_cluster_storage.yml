@@ -1,13 +1,15 @@
 ---
 - hosts: k8s_worker
   roles:
-    - {role: cluster_storage/zfs/zpool_member, tags: ['zfs']}
+    - {role: cluster_storage/zfs/zpool_member, tags: ['zfs', 'zpool_member']}
   become: true
   become_user: root
 
 - hosts: k8s_controller
   roles:
-    - {role: cluster_storage/openebs, tags: ['openebs']}
-    - {role: cluster_storage/velero/minio_velero_tenant, tags: ['minio_velero_tenant', 'minio', 'velero']}
+    - {role: cluster_storage/zfs/base, tags: ['zfs']}
+    - {role: cluster_storage/velero/velero_cli, tags: ['velero_cli']}
+    # - {role: cluster_storage/openebs, tags: ['openebs']}
+    # - {role: cluster_storage/velero/minio_velero_tenant, tags: ['minio_velero_tenant', 'minio', 'velero']}
   become: true
   become_user: root

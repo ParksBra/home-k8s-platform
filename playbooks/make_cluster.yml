@@ -10,7 +10,6 @@
 
 - hosts: k8s_controller
   roles:
-    - {role: terraform_executer, tags: ['terraform_executer']}
     - {role: k8s/controller, tags: ['k8s_controller']}
     - {role: helm, tags: ['helm']}
   become: true
