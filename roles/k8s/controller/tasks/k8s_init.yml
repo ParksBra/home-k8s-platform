@@ -34,7 +34,7 @@
   when: init_k8s_cluster.rc == 0
   become: true
   ansible.builtin.copy:
-    src: "/etc/kubernetes/admin.conf"
+    src: "{{ k8s_kubectl_config_source }}"
     dest: "{{ k8s_kubectl_config_path }}"
     owner: "{{ ansible_ssh_user }}"
     group: "{{ ansible_ssh_user }}"

@@ -41,6 +41,7 @@ k8s_container_runtime_socket: "/var/run/containerd/containerd.sock"
 k8s_cni: "calico" # Options: calico, TODO: add more later
 k8s_cni_installation_method: "helm" # Options: helm, kubectl
 k8s_cni_version: "3.31.0"
+k8s_kubectl_config_source: "/etc/kubernetes/admin.conf"
 k8s_kubectl_config_dir: "/home/{{ ansible_ssh_user }}/.kube"
 k8s_kubectl_config_path: "{{ k8s_kubectl_config_dir }}/config"
 k8s_apiserver_ip: "{{ hostvars[groups['k8s_controller'][0]]['ansible_default_ipv4'].address | default(lookup('community.general.dig', groups['k8s_controller'][0] ~ '.local.', fail_on_error=true))}}"
