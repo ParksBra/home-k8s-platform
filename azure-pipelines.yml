@@ -49,10 +49,8 @@ variables:
     value: kube-system
   - name: kubeconfigArtifactName
     value: kubeconfigFile
-  - name: kubeconfigArtifactPipelineResource
-    value: clusterBase
   - name: kubeconfigArtifactPath
-    value: $(Pipeline.Workspace)/$(kubeconfigArtifactPipelineResource)/$(kubeconfigArtifactName)/kubeconfig
+    value: $(Pipeline.Workspace)/clusterBase/$(kubeconfigArtifactName)/kubeconfig
   - group: home-k8s-ssh
 
 stages:
@@ -155,7 +153,7 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-network"
         steps:
-          - download: $(kubeconfigArtifactPipelineResource)
+          - download: clusterBase
             displayName: 'Download Kubeconfig File Artifact'
             artifact: $(kubeconfigArtifactName)
 
@@ -341,7 +339,7 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-storage"
         steps:
-          - download: $(kubeconfigArtifactPipelineResource)
+          - download: clusterBase
             displayName: 'Download Kubeconfig File Artifact'
             artifact: $(kubeconfigArtifactName)
 
