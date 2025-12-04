@@ -1,0 +1,419 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: 'local-agent'
+  vmImage: 'ubuntu-latest'
+
+resources:
+  repositories:
+    - repository: home-k8s-tf-platform-network
+      type: github
+      endpoint: ParksBra
+      ref: migrate_to_self_contained
+      name: ParksBra/home-k8s-tf-platform-network
+
+    - repository: home-k8s-tf-platform-storage
+      type: github
+      endpoint: ParksBra
+      ref: migrate_to_self_contained
+      name: ParksBra/home-k8s-tf-platform-storage
+
+variables:
+  - name: venvPath
+    value: $(System.DefaultWorkingDirectory)/venv
+  - name: pythonRequirementsFileName
+    value: requirements.txt
+  - name: ansibleRequirementsFileName
+    value: requirements.yml
+  - name: cacheVersion
+    value: v01
+  - name: ansibleWorkspacePath
+    value: $(System.DefaultWorkingDirectory)/ansible
+  - name: ansibleConfigPath
+    value: $(ansibleWorkspacePath)/ansible.cfg
+  - name: ansibleDebug
+    value: "false"
+  - name: terraformWorkspaceDirectoryName
+    value: terraform
+  - name: terraformWorkspacePath
+    value: $(System.DefaultWorkingDirectory)/$(terraformWorkspaceDirectoryName)
+  - name: terraformPlanFileName
+    value: tfplan
+  - name: terraformBackendNamespace
+    value: kube-system
+
+stages:
+  - stage: "platformNetworkPrerequisites"
+    displayName: "Platform Network Prerequisites"
+    jobs:
+      - job: "setupAnsible"
+        variables:
+          - group: home-k8s-ssh
+          - group: home-k8s-cluster
+        displayName: "Setup Ansible"
+        steps:
+          - checkout: self
+            name: "checkoutCurrentRepo"
+            clean: "true"
+            displayName: 'Checkout Current Repository'
+
+          - task: Bash@3
+            name: "setupEnvironment"
+            displayName: "Setup Python Environment"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Setup Python Virtual Environment"
+                    python3 -m venv $(venvPath)
+                    $(venvPath)/bin/pip install --upgrade pip
+                echo "##[endgroup]"
+              failOnStderr: true
+
+          - task: Cache@2
+            name: "cacheVenv"
+            displayName: "Cache Virtual Environment"
+            inputs:
+              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(pythonRequirementsFileName)'
+              path: $(venvPath)
+              cacheHitVar: cacheRestored
+
+          - task: Bash@3
+            name: "installDependencies"
+            displayName: "Install Dependencies"
+            condition: ne(variables.cacheRestored, 'true')
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Install pip requirements"
+                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(pythonRequirementsFileName)
+                    $(venvPath)/bin/pip install ansible
+                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/$(ansibleRequirementsFileName)
+                echo "##[endgroup]"
+
+          - task: DownloadSecureFile@1
+            name: controllerKey
+            displayName: 'Fetch Controller SSH Key'
+            inputs:
+              secureFile: "home-k8s-controller.pem"
+
+          - task: DownloadSecureFile@1
+            name: workerKey
+            displayName: 'Fetch Worker SSH Key'
+            inputs:
+              secureFile: "home-k8s-worker.pem"
+
+          - task: Bash@3
+            name: "ansibleNetworkPrerequisites"
+            displayName: "Run Ansible Playbook for Platform Network Prerequisites"
+            env:
+              ANSIBLE_CONFIG: "$(ansibleConfigPath)"
+              DEBUG: "$(ansibleDebug)"
+              CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
+              CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
+              CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
+              WORKER_SSH_KEY_PATH: "$(workerKey.secureFilePath)"
+              WORKER_SSH_USER: "$(home-k8s-ssh-worker-user)"
+              K8S_CLUSTER_DOMAIN: "$(home-k8s-cluster-cluster-domain)"
+              K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
+              K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
+              K8S_DISCOVERY_TOKEN: "$(home-k8s-cluster-discovery-token)"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Set Permissions for SSH Key(s)"
+                    chmod 600 $CONTROLLER_SSH_KEY_PATH
+                    chmod 600 $WORKER_SSH_KEY_PATH
+                echo "##[endgroup]"
+
+                echo "##[group]Run the Ansible Playbook"
+                    cd $(ansibleWorkspacePath)
+                    $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/platform_network_prereqs.yml
+                echo "##[endgroup]"
+              failOnStderr: true
+
+  - stage: "platformNetworkTerraform"
+    dependsOn: "platformNetworkPrerequisites"
+    displayName: "Platform Network Terraform"
+    jobs:
+      - job: "terraformApply"
+        displayName: "Run Terraform Apply for Platform Network"
+        variables:
+          - group: home-k8s-terraform
+          - group: home-k8s-cluster
+          - name: terraformBackendSuffix
+            value: "platform-network"
+        steps:
+          - download: current
+            displayName: 'Download Kubeconfig File Artifact'
+            artifact: kubeconfigFile
+
+          - checkout: home-k8s-tf-platform-network
+            displayName: 'Checkout Platform Network Repository'
+            path: "$(terraformWorkspaceDirectoryName)"
+            sparseCheckoutDirectories: "terraform"
+
+          - task: TerraformInstaller@0
+            name: "installTerraform"
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: Bash@3
+            name: "runTerraformPlan"
+            displayName: "Terraform Plan"
+            env:
+              TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/platform-network-terraform/terraform/.terraform"
+              TF_IN_AUTOMATION: "1"
+              TF_INPUT: "0"
+              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_python_executable: "$(venvPath)/bin/python"
+              TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
+              TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
+              TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
+              TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
+              TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
+              TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
+              TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
+              TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
+              CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
+              KUBE_NAMESPACE: "$(terraformBackendNamespace)"
+              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+              AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Run Terraform Init"
+                    cd $(terraformWorkspacePath)
+                    terraform init -no-color -upgrade -backend-config='secret_suffix=$(terraformBackendSuffix)'
+                echo "##[endgroup]"
+                echo "##[group]Run Terraform Plan"
+                    terraform plan -no-color -out=$(terraformPlanFileName)
+                echo "##[endgroup]"
+              failOnStderr: true
+
+          - task: Bash@3
+            name: "runTerraformApply"
+            displayName: "Terraform Apply"
+            env:
+              TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
+              TF_IN_AUTOMATION: "1"
+              TF_INPUT: "0"
+              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_python_executable: "$(venvPath)/bin/python"
+              TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
+              TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
+              TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
+              TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
+              TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
+              TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
+              TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
+              TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
+              CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
+              KUBE_NAMESPACE: "$(terraformBackendNamespace)"
+              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+              AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Run Terraform Init"
+                    cd $(terraformWorkspacePath)
+                    terraform init -no-color -upgrade -backend-config='secret_suffix=$(terraformBackendSuffix)'
+                echo "##[endgroup]"
+                echo "##[group]Run Terraform Apply"
+                    terraform apply -no-color -auto-approve $(terraformPlanFileName)
+                echo "##[endgroup]"
+              failOnStderr: true
+
+  - stage: "platformStoragePrerequisites"
+    displayName: "Platform Storage Prerequisites"
+    jobs:
+      - job: "setupAnsible"
+        variables:
+          - group: home-k8s-ssh
+          - group: home-k8s-cluster
+        displayName: "Setup Ansible"
+        steps:
+          - checkout: self
+            name: "checkoutCurrentRepo"
+            clean: "true"
+            displayName: 'Checkout Current Repository'
+
+          - task: Bash@3
+            name: "setupEnvironment"
+            displayName: "Setup Python Environment"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Setup Python Virtual Environment"
+                    python3 -m venv $(venvPath)
+                    $(venvPath)/bin/pip install --upgrade pip
+                echo "##[endgroup]"
+              failOnStderr: true
+
+          - task: Cache@2
+            name: "cacheVenv"
+            displayName: "Cache Virtual Environment"
+            inputs:
+              key: 'venv$(cacheVersion) | "$(Agent.OS)" | $(ansibleWorkspacePath)/$(pythonRequirementsFileName)'
+              path: $(venvPath)
+              cacheHitVar: cacheRestored
+
+          - task: Bash@3
+            name: "installDependencies"
+            displayName: "Install Dependencies"
+            condition: ne(variables.cacheRestored, 'true')
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Install pip requirements"
+                    $(venvPath)/bin/pip install --upgrade -r $(ansibleWorkspacePath)/$(pythonRequirementsFileName)
+                    $(venvPath)/bin/pip install ansible
+                    ansible-galaxy collection install --force -r $(ansibleWorkspacePath)/$(ansibleRequirementsFileName)
+                echo "##[endgroup]"
+
+          - task: DownloadSecureFile@1
+            name: controllerKey
+            displayName: 'Fetch Controller SSH Key'
+            inputs:
+              secureFile: "home-k8s-controller.pem"
+
+          - task: DownloadSecureFile@1
+            name: workerKey
+            displayName: 'Fetch Worker SSH Key'
+            inputs:
+              secureFile: "home-k8s-worker.pem"
+
+          - task: Bash@3
+            name: "ansibleStoragePrerequisites"
+            displayName: "Run Ansible Playbook for Platform Storage Prerequisites"
+            env:
+              ANSIBLE_CONFIG: "$(ansibleConfigPath)"
+              DEBUG: "$(ansibleDebug)"
+              CI_WORKSPACE: "$(System.DefaultWorkingDirectory)"
+              CONTROLLER_SSH_KEY_PATH: "$(controllerKey.secureFilePath)"
+              CONTROLLER_SSH_USER: "$(home-k8s-ssh-controller-user)"
+              WORKER_SSH_KEY_PATH: "$(workerKey.secureFilePath)"
+              WORKER_SSH_USER: "$(home-k8s-ssh-worker-user)"
+              K8S_CLUSTER_DOMAIN: "$(home-k8s-cluster-cluster-domain)"
+              K8S_POD_NETWORK_CIDR: "$(home-k8s-cluster-pod-network-cidr)"
+              K8S_SERVICE_NETWORK_CIDR: "$(home-k8s-cluster-service-network-cidr)"
+              K8S_DISCOVERY_TOKEN: "$(home-k8s-cluster-discovery-token)"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Set Permissions for SSH Key(s)"
+                    chmod 600 $CONTROLLER_SSH_KEY_PATH
+                    chmod 600 $WORKER_SSH_KEY_PATH
+                echo "##[endgroup]"
+
+                echo "##[group]Run the Ansible Playbook"
+                    cd $(ansibleWorkspacePath)
+                    $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/platform_storage_prereqs.yml
+                echo "##[endgroup]"
+              failOnStderr: true
+
+  - stage: "platformStorageTerraform"
+    dependsOn:
+      - "platformNetworkTerraform"
+      - "platformStoragePrerequisites"
+    displayName: "Platform Storage Terraform"
+    jobs:
+      - job: "terraformApply"
+        displayName: "Run Terraform Apply for Platform Storage"
+        variables:
+          - group: home-k8s-terraform
+          - group: home-k8s-cluster
+          - name: terraformBackendSuffix
+            value: "platform-storage"
+        steps:
+          - download: current
+            displayName: 'Download Kubeconfig File Artifact'
+            artifact: kubeconfigFile
+
+          - checkout: home-k8s-tf-platform-storage
+            displayName: 'Checkout Platform Storage Repository'
+            path: "$(terraformWorkspaceDirectoryName)"
+            sparseCheckoutDirectories: "terraform"
+
+          - task: TerraformInstaller@0
+            name: "installTerraform"
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - task: Bash@3
+            name: "runTerraformPlan"
+            displayName: "Terraform Plan"
+            env:
+              TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
+              TF_IN_AUTOMATION: "1"
+              TF_INPUT: "0"
+              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_python_executable: "$(venvPath)/bin/python"
+              TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
+              TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
+              TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
+              TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
+              TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
+              TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
+              TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
+              TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
+              CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
+              KUBE_NAMESPACE: "$(terraformBackendNamespace)"
+              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+              AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Run Terraform Init"
+                    cd $(terraformWorkspacePath)
+                    terraform init -no-color -upgrade -backend-config='secret_suffix=$(terraformBackendSuffix)'
+                echo "##[endgroup]"
+                echo "##[group]Run Terraform Plan"
+                    terraform plan -no-color -out=$(terraformPlanFileName)
+                echo "##[endgroup]"
+              failOnStderr: true
+
+          - task: Bash@3
+            name: "runTerraformApply"
+            displayName: "Terraform Apply"
+            env:
+              TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/platform-network-terraform/terraform/.terraform"
+              TF_IN_AUTOMATION: "1"
+              TF_INPUT: "0"
+              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_python_executable: "$(venvPath)/bin/python"
+              TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
+              TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
+              TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
+              TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
+              TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
+              TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
+              TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
+              TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
+              CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
+              KUBE_NAMESPACE: "$(terraformBackendNamespace)"
+              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
+              AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
+
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "##[group]Run Terraform Init"
+                    cd $(terraformWorkspacePath)
+                    terraform init -no-color -upgrade -backend-config='secret_suffix=$(terraformBackendSuffix)'
+                echo "##[endgroup]"
+                echo "##[group]Run Terraform Apply"
+                    terraform apply -no-color -auto-approve $(terraformPlanFileName)
+                echo "##[endgroup]"
+              failOnStderr: true

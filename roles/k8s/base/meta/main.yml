@@ -1,3 +1,0 @@
-dependencies:
-  - role: apt_repos
-  - role: docker

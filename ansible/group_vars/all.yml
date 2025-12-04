@@ -1,0 +1,16 @@
+debug: "{{ lookup('env', 'DEBUG') | default(false) | bool }}"
+
+ansible_python_interpreter: "/usr/bin/python3.13"
+
+ci_workspace_path: "{{ lookup('env', 'CI_WORKSPACE') | default('.') }}"
+
+temp_directory: "/tmp/ansible_home"
+
+velero_cli_version: "1.17.1"
+velero_cli_arch: "arm64"
+velero_cli_download_url: "https://github.com/vmware-tanzu/velero/releases/download/v{{ velero_cli_version }}/velero-v{{ velero_cli_version }}-linux-{{ velero_cli_arch }}.tar.gz"
+velero_cli_install_dir: "/usr/local/bin"
+velero_cli_enabled: true
+
+zfs_pool_name: "zfspv-pool"
+zfs_pool_device: "/dev/sda1"

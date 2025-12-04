@@ -1,3 +1,0 @@
-dependencies:
-  - role: cluster_storage/zfs/base
-  - role: helm

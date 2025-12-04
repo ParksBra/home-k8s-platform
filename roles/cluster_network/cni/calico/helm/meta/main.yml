@@ -1,3 +1,0 @@
-dependencies:
-  - role: cluster_network/cni/calicoctl
-  - role: helm

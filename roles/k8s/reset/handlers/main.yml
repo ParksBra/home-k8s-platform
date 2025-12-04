@@ -1,3 +1,0 @@
-- name: Cleanup after k8s reset
-  ansible.builtin.include_tasks: k8s_cleanup.yml
-  listen: k8s_cleanup

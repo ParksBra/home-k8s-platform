@@ -1,3 +1,0 @@
-openebs_namespace: "openebs"
-openebs_zfs_pool_name: "zfspv-pool"
-openebs_zfs_pool_device: "/dev/sdb"

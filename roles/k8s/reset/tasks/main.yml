@@ -1,2 +1,0 @@
-- name: Reset k8s
-  ansible.builtin.include_tasks: k8s_reset.yml

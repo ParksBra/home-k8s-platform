@@ -1,2 +1,0 @@
-dependencies:
-  - role: cluster_storage/minio_operator
