@@ -187,7 +187,7 @@ stages:
               TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
               KUBE_NAMESPACE: "$(terraformBackendNamespace)"
-              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              KUBE_CONFIG_PATH: "$(kubeconfigArtifactPath)"
               AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
               AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
 
@@ -222,7 +222,7 @@ stages:
               TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
               KUBE_NAMESPACE: "$(terraformBackendNamespace)"
-              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              KUBE_CONFIG_PATH: "$(kubeconfigArtifactPath)"
               AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
               AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
 
@@ -373,7 +373,7 @@ stages:
               TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
               KUBE_NAMESPACE: "$(terraformBackendNamespace)"
-              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              KUBE_CONFIG_PATH: "$(kubeconfigArtifactPath)"
               AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
               AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
 
@@ -408,7 +408,7 @@ stages:
               TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
               KUBE_NAMESPACE: "$(terraformBackendNamespace)"
-              KUBE_CONFIG_PATH: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              KUBE_CONFIG_PATH: "$(kubeconfigArtifactPath)"
               AZDO_PERSONAL_ACCESS_TOKEN: $(System.AccessToken)
               AZDO_ORG_SERVICE_URL: $(System.TeamFoundationCollectionUri)
 
