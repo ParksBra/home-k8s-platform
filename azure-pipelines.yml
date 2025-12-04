@@ -175,7 +175,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
@@ -196,9 +195,6 @@ stages:
               script: |
                 echo "##[group]Run Terraform Init"
                     cd $(terraformWorkspacePath)
-                    pwd
-                    echo $KUBE_CONFIG_PATH
-                    cat $KUBE_CONFIG_PATH
                     terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=$(terraformBackendSuffix)'
                 echo "##[endgroup]"
                 echo "##[group]Run Terraform Plan"
@@ -213,7 +209,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
@@ -364,7 +359,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
@@ -399,7 +393,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
