@@ -8,6 +8,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 resources:
+  pipelines:
+    - pipeline: home-k8s-cluster-base
+      project: current
+      source: home-k8s-cluster-base
   repositories:
     - repository: home-k8s-tf-platform-network
       type: github
@@ -146,7 +150,7 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-network"
         steps:
-          - download: current
+          - download: home-k8s-cluster-base
             displayName: 'Download Kubeconfig File Artifact'
             artifact: kubeconfigFile
 
@@ -333,7 +337,7 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-storage"
         steps:
-          - download: current
+          - download: home-k8s-cluster-base
             displayName: 'Download Kubeconfig File Artifact'
             artifact: kubeconfigFile
 
