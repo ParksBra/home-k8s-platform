@@ -10,7 +10,6 @@ pool:
 resources:
   pipelines:
     - pipeline: clusterBase
-      project: $(System.TeamProject)
       source: ParksBra.home-k8s-cluster-base
   repositories:
     - repository: terraformPlatformNetwork
