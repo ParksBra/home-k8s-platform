@@ -11,7 +11,7 @@ resources:
   pipelines:
     - pipeline: clusterBase
       project: current
-      source: home-k8s-cluster-base
+      source: ParksBra.home-k8s-cluster-base
   repositories:
     - repository: terraformPlatformNetwork
       type: github
