@@ -9,17 +9,17 @@ pool:
 
 resources:
   pipelines:
-    - pipeline: home-k8s-cluster-base
+    - pipeline: clusterBase
       project: current
       source: home-k8s-cluster-base
   repositories:
-    - repository: home-k8s-tf-platform-network
+    - repository: terraformPlatformNetwork
       type: github
       endpoint: ParksBra
       ref: migrate_to_self_contained
       name: ParksBra/home-k8s-tf-platform-network
 
-    - repository: home-k8s-tf-platform-storage
+    - repository: terraformPlatformStorage
       type: github
       endpoint: ParksBra
       ref: migrate_to_self_contained
@@ -48,6 +48,7 @@ variables:
     value: tfplan
   - name: terraformBackendNamespace
     value: kube-system
+  - group: home-k8s-ssh
 
 stages:
   - stage: "platformNetworkPrerequisites"
@@ -55,7 +56,6 @@ stages:
     jobs:
       - job: "setupAnsible"
         variables:
-          - group: home-k8s-ssh
           - group: home-k8s-cluster
         displayName: "Setup Ansible"
         steps:
@@ -101,13 +101,13 @@ stages:
             name: controllerKey
             displayName: 'Fetch Controller SSH Key'
             inputs:
-              secureFile: "home-k8s-controller.pem"
+              secureFile: "$(home-k8s-ssh-controller-key-secret-file)"
 
           - task: DownloadSecureFile@1
             name: workerKey
             displayName: 'Fetch Worker SSH Key'
             inputs:
-              secureFile: "home-k8s-worker.pem"
+              secureFile: "$(home-k8s-ssh-worker-key-secret-file)"
 
           - task: Bash@3
             name: "ansibleNetworkPrerequisites"
@@ -150,11 +150,11 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-network"
         steps:
-          - download: home-k8s-cluster-base
+          - download: clusterBase
             displayName: 'Download Kubeconfig File Artifact'
             artifact: kubeconfigFile
 
-          - checkout: home-k8s-tf-platform-network
+          - checkout: terraformPlatformNetwork
             displayName: 'Checkout Platform Network Repository'
             path: "$(terraformWorkspaceDirectoryName)"
             sparseCheckoutDirectories: "terraform"
@@ -240,7 +240,6 @@ stages:
     jobs:
       - job: "setupAnsible"
         variables:
-          - group: home-k8s-ssh
           - group: home-k8s-cluster
         displayName: "Setup Ansible"
         steps:
@@ -286,13 +285,13 @@ stages:
             name: controllerKey
             displayName: 'Fetch Controller SSH Key'
             inputs:
-              secureFile: "home-k8s-controller.pem"
+              secureFile: "$(home-k8s-ssh-controller-key-secret-file)"
 
           - task: DownloadSecureFile@1
             name: workerKey
             displayName: 'Fetch Worker SSH Key'
             inputs:
-              secureFile: "home-k8s-worker.pem"
+              secureFile: "$(home-k8s-ssh-worker-key-secret-file)"
 
           - task: Bash@3
             name: "ansibleStoragePrerequisites"
@@ -337,11 +336,11 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-storage"
         steps:
-          - download: home-k8s-cluster-base
+          - download: clusterBase
             displayName: 'Download Kubeconfig File Artifact'
             artifact: kubeconfigFile
 
-          - checkout: home-k8s-tf-platform-storage
+          - checkout: terraformPlatformStorage
             displayName: 'Checkout Platform Storage Repository'
             path: "$(terraformWorkspaceDirectoryName)"
             sparseCheckoutDirectories: "terraform"
