@@ -14,3 +14,8 @@ velero_cli_enabled: true
 
 zfs_pool_name: "zfspv-pool"
 zfs_pool_device: "/dev/sda1"
+
+calicoctl_arch: "arm64"
+calicoctl_version: "3.31.0"
+calicoctl_download_url: "https://github.com/projectcalico/calico/releases/download/v{{ calicoctl_version }}/calicoctl-linux-{{ calicoctl_arch }}"
+calicoctl_executable_path: "/usr/local/bin/kubectl-calico"
