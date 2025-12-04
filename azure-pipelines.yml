@@ -47,6 +47,12 @@ variables:
     value: tfplan
   - name: terraformBackendNamespace
     value: kube-system
+  - name: kubeconfigArtifactName
+    value: kubeconfigFile
+  - name: kubeconfigArtifactPipelineResource
+    value: clusterBase
+  - name: kubeconfigArtifactPath
+    value: $(Pipeline.Workspace)/$(kubeconfigArtifactPipelineResource)/$(kubeconfigArtifactName)/kubeconfig
   - group: home-k8s-ssh
 
 stages:
@@ -149,9 +155,9 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-network"
         steps:
-          - download: clusterBase
+          - download: $(kubeconfigArtifactPipelineResource)
             displayName: 'Download Kubeconfig File Artifact'
-            artifact: kubeconfigFile
+            artifact: $(kubeconfigArtifactName)
 
           - checkout: terraformPlatformNetwork
             displayName: 'Checkout Platform Network Repository'
@@ -168,10 +174,10 @@ stages:
             name: "runTerraformPlan"
             displayName: "Terraform Plan"
             env:
-              TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/platform-network-terraform/terraform/.terraform"
+              TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
@@ -192,7 +198,7 @@ stages:
               script: |
                 echo "##[group]Run Terraform Init"
                     cd $(terraformWorkspacePath)
-                    terraform init -no-color -upgrade -backend-config='secret_suffix=$(terraformBackendSuffix)'
+                    terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=$(terraformBackendSuffix)'
                 echo "##[endgroup]"
                 echo "##[group]Run Terraform Plan"
                     terraform plan -no-color -out=$(terraformPlanFileName)
@@ -206,7 +212,7 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
@@ -227,7 +233,7 @@ stages:
               script: |
                 echo "##[group]Run Terraform Init"
                     cd $(terraformWorkspacePath)
-                    terraform init -no-color -upgrade -backend-config='secret_suffix=$(terraformBackendSuffix)'
+                    terraform init -no-color -upgrade -reconfigure -backend-config='secret_suffix=$(terraformBackendSuffix)'
                 echo "##[endgroup]"
                 echo "##[group]Run Terraform Apply"
                     terraform apply -no-color -auto-approve $(terraformPlanFileName)
@@ -335,9 +341,9 @@ stages:
           - name: terraformBackendSuffix
             value: "platform-storage"
         steps:
-          - download: clusterBase
+          - download: $(kubeconfigArtifactPipelineResource)
             displayName: 'Download Kubeconfig File Artifact'
-            artifact: kubeconfigFile
+            artifact: $(kubeconfigArtifactName)
 
           - checkout: terraformPlatformStorage
             displayName: 'Checkout Platform Storage Repository'
@@ -357,7 +363,7 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
@@ -389,10 +395,10 @@ stages:
             name: "runTerraformApply"
             displayName: "Terraform Apply"
             env:
-              TF_DATA_DIR: "$(System.DefaultWorkingDirectory)/platform-network-terraform/terraform/.terraform"
+              TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              TF_VAR_kubeconfig_path: "$(Pipeline.Workspace)/kubeconfigFile/kubeconfig"
+              TF_VAR_kubeconfig_path: "$(kubeconfigArtifactPath)"
               TF_VAR_python_executable: "$(venvPath)/bin/python"
               TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
               TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
