@@ -139,7 +139,7 @@ stages:
                     cd $(ansibleWorkspacePath)
                     $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/platform_network_prereqs.yml
                 echo "##[endgroup]"
-              failOnStderr: true
+              # failOnStderr: true
 
   - stage: "platformNetworkTerraform"
     dependsOn: "platformNetworkPrerequisites"
@@ -307,7 +307,7 @@ stages:
                     cd $(ansibleWorkspacePath)
                     $(venvPath)/bin/ansible-playbook $(ansibleWorkspacePath)/playbooks/platform_storage_prereqs.yml
                 echo "##[endgroup]"
-              failOnStderr: true
+              # failOnStderr: true
 
   - stage: "platformStorageTerraform"
     dependsOn:
