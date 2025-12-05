@@ -2,20 +2,24 @@ debug: "{{ lookup('env', 'DEBUG') | default(false) | bool }}"
 
 ansible_python_interpreter: "/usr/bin/python3.13"
 
-ci_workspace_path: "{{ lookup('env', 'CI_WORKSPACE') | default('.') }}"
+host:
+  temp_directory: "/tmp/ansible_home"
 
-temp_directory: "/tmp/ansible_home"
+storage:
+  velero:
+    cli:
+      version: "1.17.1"
+      arch: "arm64"
+      download_url: "https://github.com/vmware-tanzu/velero/releases/download/v{{ storage.velero.cli.version }}/velero-v{{ storage.velero.cli.version }}-linux-{{ storage.velero.cli.arch }}.tar.gz"
+      install_dir: "/usr/local/bin"
+  zfs:
+    pool:
+      name: "zfspv-pool"
+      device: "/dev/sda1"
 
-velero_cli_version: "1.17.1"
-velero_cli_arch: "arm64"
-velero_cli_download_url: "https://github.com/vmware-tanzu/velero/releases/download/v{{ velero_cli_version }}/velero-v{{ velero_cli_version }}-linux-{{ velero_cli_arch }}.tar.gz"
-velero_cli_install_dir: "/usr/local/bin"
-velero_cli_enabled: true
-
-zfs_pool_name: "zfspv-pool"
-zfs_pool_device: "/dev/sda1"
-
-calicoctl_arch: "arm64"
-calicoctl_version: "3.31.0"
-calicoctl_download_url: "https://github.com/projectcalico/calico/releases/download/v{{ calicoctl_version }}/calicoctl-linux-{{ calicoctl_arch }}"
-calicoctl_executable_path: "/usr/local/bin/kubectl-calico"
+network:
+  calicoctl:
+    arch: "arm64"
+    version: "3.31.0"
+    download_url: "https://github.com/projectcalico/calico/releases/download/v{{ network.calicoctl.version }}/calicoctl-linux-{{ network.calicoctl.arch }}"
+    executable_path: "/usr/local/bin/kubectl-calico"
