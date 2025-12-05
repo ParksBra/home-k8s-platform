@@ -162,7 +162,7 @@ stages:
             path: "$(terraformWorkspaceDirectoryName)"
             sparseCheckoutDirectories: "terraform"
 
-          - task: TerraformInstaller@0
+          - task: TerraformInstaller@1
             name: "installTerraform"
             displayName: 'Install Terraform'
             inputs:
@@ -175,15 +175,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              # TF_VAR_python_executable: "$(venvPath)/bin/python"
-              # TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
-              # TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
-              # TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
-              # TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
-              # TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
-              # TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
-              # TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
-              # TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               TF_VAR_azuredevops_library_name: "home-k8s-cluster"
               TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
@@ -211,15 +202,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              # TF_VAR_python_executable: "$(venvPath)/bin/python"
-              # TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
-              # TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
-              # TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
-              # TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
-              # TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
-              # TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
-              # TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
-              # TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               TF_VAR_azuredevops_library_name: "home-k8s-cluster"
               TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
@@ -350,7 +332,7 @@ stages:
             path: "$(terraformWorkspaceDirectoryName)"
             sparseCheckoutDirectories: "terraform"
 
-          - task: TerraformInstaller@0
+          - task: TerraformInstaller@1
             name: "installTerraform"
             displayName: 'Install Terraform'
             inputs:
@@ -363,15 +345,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              # TF_VAR_python_executable: "$(venvPath)/bin/python"
-              # TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
-              # TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
-              # TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
-              # TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
-              # TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
-              # TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
-              # TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
-              # TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               TF_VAR_azuredevops_library_name: "home-k8s-cluster"
               TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
@@ -399,15 +372,6 @@ stages:
               TF_DATA_DIR: "$(terraformWorkspacePath)/.terraform"
               TF_IN_AUTOMATION: "1"
               TF_INPUT: "0"
-              # TF_VAR_python_executable: "$(venvPath)/bin/python"
-              # TF_VAR_pod_network_cidr: "$(home-k8s-cluster-pod-network-cidr)"
-              # TF_VAR_service_network_cidr: "$(home-k8s-cluster-service-network-cidr)"
-              # TF_VAR_cluster_domain: "$(home-k8s-cluster-cluster-domain)"
-              # TF_VAR_cert_manager_acme_email: $(home-k8s-cluster-certmanager-acme-email)
-              # TF_VAR_cert_manager_dns_provider_email: $(home-k8s-cluster-certmanager-cloudflare-email)
-              # TF_VAR_cert_manager_dns_provider_api_token: $(home-k8s-cluster-certmanager-cloudflare-api-token)
-              # TF_VAR_tailscale_oauth_client_id: $(home-k8s-cluster-tailscale-operator-client-id)
-              # TF_VAR_tailscale_oauth_client_secret: $(home-k8s-cluster-tailscale-operator-client-secret)
               TF_VAR_azuredevops_library_name: "home-k8s-cluster"
               TF_VAR_azuredevops_library_project_id: "$(System.TeamProjectId)"
               CLOUDFLARE_API_TOKEN: $(home-k8s-terraform-provider-cloudflare-api-token)
